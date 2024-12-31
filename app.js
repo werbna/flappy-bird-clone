@@ -34,10 +34,10 @@ function preload() {
   });
 }
 
-
 function create() {
   const background = this.add.image(0, 0, "background").setOrigin(0, 0);
   const roads = this.physics.add.staticGroup();
+
   const topColumns = this.physics.add.staticGroup({
     key: "column",
     repeat: 1,
@@ -58,23 +58,44 @@ function create() {
 
   this.physics.add.overlap(bird, road, () => (hasLanded = true), null, this);
   this.physics.add.collider(bird, road);
-
-  this.physics.add.overlap(bird, topColumns, ()=>hasBumped=true,null, this);
-  this.physics.add.overlap(bird, bottomColumns, ()=>hasBumped=true,null, this);
+  this.physics.add.overlap(
+    bird,
+    topColumns,
+    () => (hasBumped = true),
+    null,
+    this
+  );
+  this.physics.add.overlap(
+    bird,
+    bottomColumns,
+    () => (hasBumped = true),
+    null,
+    this
+  );
   this.physics.add.collider(bird, topColumns);
   this.physics.add.collider(bird, bottomColumns);
 
   cursors = this.input.keyboard.createCursorKeys();
 
-  messageToPlayer = this.add.text(0,0, `Instructions: Press space bar to start`, { fontFamily: '"Comic Sans MS", Times, serif', fontSize: "20px",color: "white", backgroundColor: "black"})
+  messageToPlayer = this.add.text(
+    0,
+    0,
+    `Instructions: Press space bar to start`,
+    {
+      fontFamily: '"Comic Sans MS", Times, serif',
+      fontSize: "20px",
+      color: "white",
+      backgroundColor: "black",
+    }
+  );
   Phaser.Display.Align.In.BottomCenter(messageToPlayer, background, 0, 50);
 }
 
 function update() {
-  if (!isGameStarted){
+  if (!isGameStarted) {
     bird.setVelocityY(-160);
   }
-  
+
   if (cursors.up.isDown && !hasLanded) {
     bird.setVelocityY(-160);
   }
@@ -82,21 +103,21 @@ function update() {
   if (!hasLanded || !hasBumped) {
     bird.body.velocity.x = 50;
   }
-  
+
   if (hasLanded || hasBumped || !isGameStarted) {
     bird.body.velocity.x = 0;
   }
 
-  if(cursors.space.isDown && !isGameStarted) {
+  if (cursors.space.isDown && !isGameStarted) {
     isGameStarted = true;
   }
 
   if (hasLanded || hasBumped) {
-    messageToPlayer.text = `Oh No! You crashed!`
+    messageToPlayer.text = `Oh No! You crashed!`;
   }
 
   if (bird.x > 750) {
     bird.setVelocityY(40);
-    messageToPlayer.text = `Congratulations, You've won!`
+    messageToPlayer.text = `Congratulations, You've won!`;
   }
 }
