@@ -1,4 +1,3 @@
-//game configuration
 let config = {
   renderer: Phaser.AUTO,
   width: 800,
@@ -18,8 +17,13 @@ let config = {
 };
 
 let game = new Phaser.Game(config);
+let isGameStarted = false;
+let bird;
+let hasLanded = false;
+let hasBumped = false;
+let cursors;
+let messageToPlayer;
 
-// function to bring in images for our application, such as the background.
 function preload() {
   this.load.image("background", "assets/background.png");
   this.load.image("road", "assets/road.png");
@@ -30,14 +34,10 @@ function preload() {
   });
 }
 
-let bird;
-let hasLanded = false;
-// function to generate elements while will appear in the game
+
 function create() {
   const background = this.add.image(0, 0, "background").setOrigin(0, 0);
   const roads = this.physics.add.staticGroup();
-  const road = roads.create(400, 568, "road").setScale(2).refreshBody();
-
   const topColumns = this.physics.add.staticGroup({
     key: "column",
     repeat: 1,
@@ -50,12 +50,53 @@ function create() {
     setXY: { x: 350, y: 400, stepX: 300 },
   });
 
-  bird = this.physics.add.sprite(0, 50, 'bird').setScale(2);
+  const road = roads.create(400, 568, "road").setScale(2).refreshBody();
+
+  bird = this.physics.add.sprite(0, 50, "bird").setScale(2);
   bird.setBounce(0.2);
   bird.setCollideWorldBounds(true);
+
+  this.physics.add.overlap(bird, road, () => (hasLanded = true), null, this);
   this.physics.add.collider(bird, road);
-  this.physics.add.overlap(bird, road, () => hasLanded = true, null, this);
-  this.physics.add.collider(bird, road);
+
+  this.physics.add.overlap(bird, topColumns, ()=>hasBumped=true,null, this);
+  this.physics.add.overlap(bird, bottomColumns, ()=>hasBumped=true,null, this);
+  this.physics.add.collider(bird, topColumns);
+  this.physics.add.collider(bird, bottomColumns);
+
+  cursors = this.input.keyboard.createCursorKeys();
+
+  messageToPlayer = this.add.text(0,0, `Instructions: Press space bar to start`, { fontFamily: '"Comic Sans MS", Times, serif', fontSize: "20px",color: "white", backgroundColor: "black"})
+  Phaser.Display.Align.In.BottomCenter(messageToPlayer, background, 0, 50);
 }
-//function used for updating the bird
-function update() {}
+
+function update() {
+  if (!isGameStarted){
+    bird.setVelocityY(-160);
+  }
+  
+  if (cursors.up.isDown && !hasLanded) {
+    bird.setVelocityY(-160);
+  }
+
+  if (!hasLanded || !hasBumped) {
+    bird.body.velocity.x = 50;
+  }
+  
+  if (hasLanded || hasBumped || !isGameStarted) {
+    bird.body.velocity.x = 0;
+  }
+
+  if(cursors.space.isDown && !isGameStarted) {
+    isGameStarted = true;
+  }
+
+  if (hasLanded || hasBumped) {
+    messageToPlayer.text = `Oh No! You crashed!`
+  }
+
+  if (bird.x > 750) {
+    bird.setVelocityY(40);
+    messageToPlayer.text = `Congratulations, You've won!`
+  }
+}
